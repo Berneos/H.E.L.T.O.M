@@ -2,60 +2,63 @@ import './Traumas.css'
 
 const STATS = [
   {
-    label: 'TRAUMAS REGISTRADOS',
-    value: '3 REGISTROS',
+    label: 'MARCAS REGISTRADAS',
+    value: '3 ATIVAS',
     tone: 'white',
   },
   {
-    label: 'NÍVEL DE SEVERIDADE',
-    value: 'CRÍTICO',
+    label: 'SEVERIDADE MÉDIA',
+    value: 'ALTA',
     tone: 'magenta',
   },
   {
-    label: 'IMPACTO NEURAL',
-    value: '47.00%',
+    label: 'CARGA EMOCIONAL',
+    value: '47%',
     tone: 'magenta',
   },
   {
-    label: 'PROTOCOLO DE CONTENÇÃO',
-    value: 'ATIVO',
+    label: 'REGULAÇÃO',
+    value: 'EM CURSO',
     tone: 'amber',
   },
 ]
 
 const TRAUMAS = [
   {
-    id: 'TRM-0xA1F2',
-    title: 'PERDA SÚBITA',
+    id: 'TRM-01',
+    title: 'PERDA SEM DESPEDIDA',
     level: 'CRÍTICA',
-    type: 'RUPTURA AFETIVA',
-    registro: '2015-11-03 · 02:17:44',
+    type: 'LUTO NÃO RESOLVIDO',
+    registro: 'Março · 2015',
     integrity: 31,
+    integrityLabel: 'PROCESSAMENTO',
     fragment:
-      'O sinal corta no meio da frase. Há um buraco onde deveria haver um rosto — o índice marca NULL e se recusa a reconstruir.',
-    tags: ['#perda', '#luto', '#ruptura'],
+      'Ainda espero a mensagem que nunca chegou. O corpo reage como se o adeus pudesse ser desfeito — e o silêncio volta a ocupar o quarto.',
+    tags: ['#luto', '#ausencia', '#familia'],
   },
   {
-    id: 'TRM-0xB83C',
-    title: 'FALHA DE ÂNCORA',
+    id: 'TRM-02',
+    title: 'ABANDONO AFETIVO',
     level: 'ALTA',
-    type: 'DESORIENTAÇÃO',
-    registro: '2019-04-21 · 23:08:11',
+    type: 'VÍNCULO ROMPIDO',
+    registro: 'Abril · 2019',
     integrity: 48,
+    integrityLabel: 'PROCESSAMENTO',
     fragment:
-      'Coordenadas emocionais desalinhadas. O vault tenta remapear a âncora, mas o checksum da sessão original não confere.',
-    tags: ['#desconexao', '#ancora', '#alerta'],
+      'Aprendi cedo a não pedir demais. Quando alguém se afasta, a mesma certeza retorna: eu era demais — ou nunca fui o suficiente.',
+    tags: ['#abandono', '#medo', '#vinculo'],
   },
   {
-    id: 'TRM-0xC01E',
-    title: 'ECO RECORRENTE',
+    id: 'TRM-03',
+    title: 'MEDO DE FALHAR EM PÚBLICO',
     level: 'ALTA',
-    type: 'LOOP MNÊMICO',
-    registro: '2021-09-30 · 06:41:02',
+    type: 'ANSIEDADE / VERGONHA',
+    registro: 'Setembro · 2021',
     integrity: 52,
+    integrityLabel: 'PROCESSAMENTO',
     fragment:
-      'O mesmo fragmento replaya a cada 00:17. Contenção parcial — o loop foi isolado, mas ainda consome banda cognitiva.',
-    tags: ['#loop', '#eco', '#contencao'],
+      'Um olhar, um riso, um erro pequeno — e o peito aperta. A cena antiga se sobrepõe ao presente como se o julgamento nunca tivesse acabado.',
+    tags: ['#ansiedade', '#vergonha', '#infancia'],
   },
 ]
 
@@ -63,44 +66,44 @@ const LOGS = [
   {
     t: '14:09:01',
     level: 'CRITICAL',
-    msg: 'TRM-0xA1F2 excedeu limiar de integridade (31%)',
+    msg: 'Gatilho de luto identificado — intensificação de tristeza e evitação',
   },
   {
     t: '14:09:07',
     level: 'WARNING',
-    msg: 'Protocolo de contenção engajado — isolamento setorial',
+    msg: 'Padrão de autoacusação ativado após lembrança de abandono',
   },
   {
     t: '14:09:12',
     level: 'NORMAL',
-    msg: 'Neural link estável · latência 14ms',
+    msg: 'Respiração e aterramento aplicados — arousal em queda',
   },
   {
     t: '14:09:18',
     level: 'WARNING',
-    msg: 'Eco recorrente detectado em cluster 0xC01E',
+    msg: 'Flashback parcial de vergonha escolar — duração ~40s',
   },
   {
     t: '14:09:24',
     level: 'CRITICAL',
-    msg: 'Impacto neural agregado: 47.00%',
+    msg: 'Carga emocional agregada em 47% — atenção recomendada',
   },
   {
     t: '14:09:31',
     level: 'NORMAL',
-    msg: 'Dump de diagnóstico gravado em /vault/trm/',
+    msg: 'Registro afetivo salvo no diário de processamento',
   },
   {
     t: '14:09:38',
     level: 'WARNING',
-    msg: 'Operador MONITOR-01 autenticado na seção TRAUMAS',
+    msg: 'Evitar isolamento prolongado nas próximas 24h',
   },
 ]
 
 export function Traumas() {
   return (
     <main className="traumas" id="traumas">
-      <section className="traumas-stats" aria-label="Métricas de traumas">
+      <section className="traumas-stats" aria-label="Panorama emocional">
         {STATS.map((stat) => (
           <article key={stat.label} className={`traumas-stat tone-${stat.tone}`}>
             <p className="traumas-stat-label">{stat.label}</p>
@@ -110,9 +113,9 @@ export function Traumas() {
       </section>
 
       <div className="traumas-layout">
-        <section className="traumas-main" aria-label="Diagnóstico neural">
+        <section className="traumas-main" aria-label="Traumas pessoais">
           <h2 className="traumas-section-title">
-            <span aria-hidden="true">♦</span> DIAGNÓSTICO E MAPEAMENTO DE EXCEÇÃO NEURAL
+            <span aria-hidden="true">♦</span> MAPA DE FERIDAS E MARCAS PSICOLÓGICAS
           </h2>
 
           <ul className="traumas-list">
@@ -132,14 +135,14 @@ export function Traumas() {
                     <dd>{trauma.type}</dd>
                   </div>
                   <div>
-                    <dt>REGISTRO</dt>
+                    <dt>ÉPOCA</dt>
                     <dd>{trauma.registro}</dd>
                   </div>
                 </dl>
 
                 <div className="traumas-integrity">
                   <div className="traumas-integrity-label">
-                    <span>INTEGRIDADE DE MEMÓRIA</span>
+                    <span>{trauma.integrityLabel}</span>
                     <span>{trauma.integrity}%</span>
                   </div>
                   <div className="traumas-integrity-track">
@@ -149,8 +152,7 @@ export function Traumas() {
 
                 <div className="traumas-fragment">
                   <p>
-                    <span className="traumas-prompt">&gt; FRAGMENT_OUTPUT:</span>{' '}
-                    “{trauma.fragment}”
+                    <span className="traumas-prompt">&gt; RELATO:</span> “{trauma.fragment}”
                   </p>
                 </div>
 
@@ -164,9 +166,9 @@ export function Traumas() {
           </ul>
         </section>
 
-        <aside className="traumas-log" aria-label="Log de contenção">
+        <aside className="traumas-log" aria-label="Diário de regulação">
           <header className="traumas-log-head">
-            <h2>LOG DE CONTENÇÃO</h2>
+            <h2>DIÁRIO DE REGULAÇÃO</h2>
             <span className="traumas-log-live" aria-hidden="true" />
           </header>
 
@@ -182,8 +184,8 @@ export function Traumas() {
           </ul>
 
           <footer className="traumas-log-foot">
-            <span>SISTEMA DE SEGURANÇA:</span>
-            <strong>ALERTA MÁXIMO</strong>
+            <span>ESTADO EMOCIONAL:</span>
+            <strong>EM PROCESSAMENTO</strong>
           </footer>
         </aside>
       </div>

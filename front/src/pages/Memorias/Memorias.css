@@ -7,6 +7,43 @@
   min-height: 0;
 }
 
+.memorias-state {
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.memorias-state-label {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.16em;
+  color: var(--cp-purple-soft);
+  text-shadow: var(--cp-glow-purple);
+}
+
+.memorias-state-label.is-error {
+  color: var(--cp-magenta);
+  text-shadow: var(--cp-glow-magenta);
+}
+
+.memorias-retry {
+  padding: 0.7rem 1.15rem;
+  border: 1px solid var(--cp-purple);
+  background: var(--cp-purple-dim);
+  color: var(--cp-text);
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+}
+
+.memorias-retry:hover {
+  background: var(--cp-purple);
+  color: var(--cp-void);
+}
+
 /* —— Stats —— */
 .memorias-stats {
   display: grid;

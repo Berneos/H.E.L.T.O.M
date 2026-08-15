@@ -1,5 +1,20 @@
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import './Habilidades.css'
+
+const CATEGORIES = [
+  { value: 'OFENSIVO', tone: 'red' },
+  { value: 'COGNITIVO', tone: 'cyan' },
+  { value: 'DEFENSIVO', tone: 'green' },
+  { value: 'SOCIAL', tone: 'purple' },
+]
+
+const INITIAL_FORM = {
+  title: '',
+  category: 'COGNITIVO',
+  level: 1,
+  active: true,
+  description: '',
+}
 
 const STATS = [
   {
@@ -28,7 +43,7 @@ const STATS = [
   },
 ]
 
-const SKILLS = [
+const INITIAL_SKILLS = [
   {
     id: 'SKL-01',
     title: 'ARTES MARCIAIS',
@@ -36,10 +51,7 @@ const SKILLS = [
     active: true,
     tone: 'red',
     level: 10,
-    xp: 10000,
-    xpMax: 10000,
-    description:
-      'Canaliza impulsos sinápticos em vetores de ataque. Latência baixa.',
+    description: 'Canaliza impulsos sinápticos em vetores de ataque. Latência baixa.',
   },
   {
     id: 'SKL-02',
@@ -48,8 +60,6 @@ const SKILLS = [
     active: true,
     tone: 'purple',
     level: 7,
-    xp: 8540,
-    xpMax: 10000,
     description:
       'Execução de movimentos graciosos e precisos. Requer coordenação motora fina.',
   },
@@ -60,8 +70,6 @@ const SKILLS = [
     active: false,
     tone: 'green',
     level: 4,
-    xp: 3200,
-    xpMax: 5000,
     description:
       'Atenuação voluntária de picos afetivos. Módulo offline — requer recalibração do limiar de empatia.',
   },
@@ -72,8 +80,6 @@ const SKILLS = [
     active: true,
     tone: 'cyan',
     level: 6,
-    xp: 5500,
-    xpMax: 7500,
     description:
       'Detecta correlações ocultas em fluxos de dados e comportamento. Precisão cresce com amostras repetidas.',
   },
@@ -84,8 +90,6 @@ const SKILLS = [
     active: false,
     tone: 'purple',
     level: 2,
-    xp: 1200,
-    xpMax: 2500,
     description:
       'Estabelece resonância emocional de curto alcance. Slot inativo — protocolo de consentimento pendente.',
   },
@@ -96,8 +100,6 @@ const SKILLS = [
     active: true,
     tone: 'green',
     level: 8,
-    xp: 7900,
-    xpMax: 10000,
     description:
       'Blindagem de clusters de memória com chaves neurais rotativas. Protege contra leitura não autorizada.',
   },
@@ -105,36 +107,105 @@ const SKILLS = [
 
 /**
  * Ponto de integração com o backend.
- * Substitua o corpo por POST multipart/form-data para o endpoint de upload.
+ * Substitua o corpo por POST JSON para o endpoint de cadastro.
  */
-async function uploadHabilidade(file) {
+async function createHabilidade(payload) {
   // TODO: conectar ao backend
-  // const body = new FormData()
-  // body.append('habilidade', file)
-  // const res = await fetch('/api/habilidades/upload', { method: 'POST', body })
-  // if (!res.ok) throw new Error('Falha no upload')
+  // const res = await fetch('/api/habilidades', {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify(payload),
+  // })
+  // if (!res.ok) throw new Error('Falha ao cadastrar habilidade')
   // return res.json()
-  await new Promise((resolve) => setTimeout(resolve, 600))
-  return { ok: true, fileName: file.name }
+  await new Promise((resolve) => setTimeout(resolve, 500))
+  return { ok: true, ...payload }
+}
+
+function toneForCategory(category) {
+  return CATEGORIES.find((c) => c.value === category)?.tone ?? 'purple'
+}
+
+function nextSkillId(skills) {
+  const next = skills.length + 1
+  return `SKL-${String(next).padStart(2, '0')}`
 }
 
 export function Habilidades() {
-  const inputId = useId()
-  const inputRef = useRef(null)
-  const [uploadState, setUploadState] = useState({ status: 'idle', fileName: '' })
+  const titleId = useId()
+  const firstFieldRef = useRef(null)
+  const [skills, setSkills] = useState(INITIAL_SKILLS)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [form, setForm] = useState(INITIAL_FORM)
+  const [status, setStatus] = useState({ type: 'idle', message: '' })
+  const [saving, setSaving] = useState(false)
 
-  async function handleFileChange(event) {
-    const file = event.target.files?.[0]
-    event.target.value = ''
-    if (!file) return
+  useEffect(() => {
+    if (!modalOpen) return undefined
 
-    setUploadState({ status: 'uploading', fileName: file.name })
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    firstFieldRef.current?.focus()
+
+    function onKeyDown(event) {
+      if (event.key === 'Escape' && !saving) setModalOpen(false)
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [modalOpen, saving])
+
+  function openModal() {
+    setForm(INITIAL_FORM)
+    setStatus({ type: 'idle', message: '' })
+    setModalOpen(true)
+  }
+
+  function closeModal() {
+    if (saving) return
+    setModalOpen(false)
+  }
+
+  function updateField(field, value) {
+    setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+
+    const title = form.title.trim()
+    const description = form.description.trim()
+    if (!title || !description) {
+      setStatus({ type: 'error', message: 'Preencha nome e descrição.' })
+      return
+    }
+
+    const payload = {
+      id: nextSkillId(skills),
+      title: title.toUpperCase(),
+      category: form.category,
+      tone: toneForCategory(form.category),
+      level: Number(form.level),
+      active: form.active,
+      description,
+    }
+
+    setSaving(true)
+    setStatus({ type: 'idle', message: '' })
 
     try {
-      await uploadHabilidade(file)
-      setUploadState({ status: 'success', fileName: file.name })
+      const created = await createHabilidade(payload)
+      setSkills((prev) => [...prev, { ...payload, ...created }])
+      setStatus({ type: 'success', message: `Módulo ${payload.title} cadastrado.` })
+      setModalOpen(false)
+      setForm(INITIAL_FORM)
     } catch {
-      setUploadState({ status: 'error', fileName: file.name })
+      setStatus({ type: 'error', message: 'Falha ao cadastrar no vault.' })
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -154,33 +225,19 @@ export function Habilidades() {
         <div className="habilidades-toolbar-copy">
           <p className="habilidades-toolbar-label">MÓDULOS</p>
           <p className="habilidades-toolbar-hint">
-            {uploadState.status === 'uploading' && `Enviando ${uploadState.fileName}…`}
-            {uploadState.status === 'success' && `Módulo recebido: ${uploadState.fileName}`}
-            {uploadState.status === 'error' && `Falha ao enviar ${uploadState.fileName}`}
-            {uploadState.status === 'idle' && '2 slots livres para novos módulos'}
+            {status.type === 'success' && status.message}
+            {status.type === 'error' && !modalOpen && status.message}
+            {status.type === 'idle' && '2 slots livres para novos módulos'}
           </p>
         </div>
 
-        <input
-          ref={inputRef}
-          id={inputId}
-          className="habilidades-upload-input"
-          type="file"
-          accept=".json,.skl,.bin,application/json"
-          onChange={handleFileChange}
-        />
-        <button
-          type="button"
-          className="habilidades-upload-btn"
-          disabled={uploadState.status === 'uploading'}
-          onClick={() => inputRef.current?.click()}
-        >
-          {uploadState.status === 'uploading' ? 'ENVIANDO…' : '+ UPLOAD DE HABILIDADE'}
+        <button type="button" className="habilidades-upload-btn" onClick={openModal}>
+          + NOVA HABILIDADE
         </button>
       </div>
 
       <section className="habilidades-grid" aria-label="Módulos de habilidade">
-        {SKILLS.map((skill) => (
+        {skills.map((skill) => (
           <article
             key={skill.id}
             className={`habilidades-card tone-${skill.tone}${skill.active ? ' is-active' : ''}`}
@@ -189,9 +246,7 @@ export function Habilidades() {
               <span className="habilidades-card-id">{skill.id}</span>
               <div className="habilidades-card-flags">
                 <span className="habilidades-card-cat">{skill.category}</span>
-                <span
-                  className={`habilidades-card-status${skill.active ? ' is-on' : ''}`}
-                >
+                <span className={`habilidades-card-status${skill.active ? ' is-on' : ''}`}>
                   <span className="habilidades-card-status-dot" aria-hidden="true" />
                   {skill.active ? 'ATIVO' : 'INATIVO'}
                 </span>
@@ -218,19 +273,6 @@ export function Habilidades() {
               </div>
             </div>
 
-            <div className="habilidades-xp">
-              <span>XP</span>
-              <div className="habilidades-xp-track">
-                <span
-                  className="habilidades-xp-fill"
-                  style={{ width: `${(skill.xp / skill.xpMax) * 100}%` }}
-                />
-              </div>
-              <span className="habilidades-xp-value">
-                {formatXp(skill.xp)} / {formatXp(skill.xpMax)}
-              </span>
-            </div>
-
             <p className="habilidades-card-desc">{skill.description}</p>
           </article>
         ))}
@@ -246,12 +288,142 @@ export function Habilidades() {
           </span>
         </span>
       </footer>
+
+      {modalOpen && (
+        <div
+          className="habilidades-modal-backdrop"
+          role="presentation"
+          onClick={closeModal}
+        >
+          <div
+            className="habilidades-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="habilidades-modal-head">
+              <div>
+                <p className="habilidades-modal-kicker">PROTOCOLO DE INSERÇÃO</p>
+                <h2 id={titleId}>CADASTRAR HABILIDADE</h2>
+              </div>
+              <button
+                type="button"
+                className="habilidades-modal-close"
+                onClick={closeModal}
+                disabled={saving}
+                aria-label="Fechar"
+              >
+                ✕
+              </button>
+            </header>
+
+            <form className="habilidades-modal-form" onSubmit={handleSubmit}>
+              <label className="habilidades-field">
+                <span>NOME</span>
+                <input
+                  ref={firstFieldRef}
+                  type="text"
+                  name="title"
+                  maxLength={48}
+                  placeholder="Ex: VISÃO TÁTICA"
+                  value={form.title}
+                  onChange={(e) => updateField('title', e.target.value)}
+                  required
+                />
+              </label>
+
+              <div className="habilidades-field-row">
+                <label className="habilidades-field">
+                  <span>CATEGORIA</span>
+                  <select
+                    name="category"
+                    value={form.category}
+                    onChange={(e) => updateField('category', e.target.value)}
+                  >
+                    {CATEGORIES.map((cat) => (
+                      <option key={cat.value} value={cat.value}>
+                        {cat.value}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="habilidades-field">
+                  <span>NÍVEL (1–10)</span>
+                  <input
+                    type="number"
+                    name="level"
+                    min={1}
+                    max={10}
+                    value={form.level}
+                    onChange={(e) =>
+                      updateField('level', Math.min(10, Math.max(1, Number(e.target.value) || 1)))
+                    }
+                  />
+                </label>
+              </div>
+
+              <fieldset className="habilidades-field habilidades-toggle">
+                <legend>STATUS</legend>
+                <label>
+                  <input
+                    type="radio"
+                    name="active"
+                    checked={form.active}
+                    onChange={() => updateField('active', true)}
+                  />
+                  ATIVO
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="active"
+                    checked={!form.active}
+                    onChange={() => updateField('active', false)}
+                  />
+                  INATIVO
+                </label>
+              </fieldset>
+
+              <label className="habilidades-field">
+                <span>DESCRIÇÃO</span>
+                <textarea
+                  name="description"
+                  rows={4}
+                  maxLength={280}
+                  placeholder="Descreva o módulo neural…"
+                  value={form.description}
+                  onChange={(e) => updateField('description', e.target.value)}
+                  required
+                />
+              </label>
+
+              {status.type === 'error' && modalOpen && (
+                <p className="habilidades-modal-error" role="alert">
+                  {status.message}
+                </p>
+              )}
+
+              <div className="habilidades-modal-actions">
+                <button
+                  type="button"
+                  className="habilidades-modal-cancel"
+                  onClick={closeModal}
+                  disabled={saving}
+                >
+                  CANCELAR
+                </button>
+                <button type="submit" className="habilidades-upload-btn" disabled={saving}>
+                  {saving ? 'GRAVANDO…' : 'CADASTRAR'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   )
-}
-
-function formatXp(value) {
-  return value.toLocaleString('pt-BR')
 }
 
 export default Habilidades

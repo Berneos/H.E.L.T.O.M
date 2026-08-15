@@ -103,18 +103,6 @@
   max-width: min(100%, 36rem);
 }
 
-.habilidades-upload-input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 .habilidades-upload-btn {
   flex-shrink: 0;
   padding: 0.7rem 1.15rem;
@@ -151,6 +139,216 @@
 .habilidades-upload-btn:focus-visible {
   outline: 2px solid var(--cp-green);
   outline-offset: 3px;
+}
+
+/* —— Modal —— */
+.habilidades-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: var(--page-pad);
+  background: color-mix(in srgb, var(--cp-void) 78%, transparent);
+  backdrop-filter: blur(8px);
+  animation: habilidades-fade-in 0.2s ease-out;
+}
+
+.habilidades-modal {
+  width: min(100%, 32rem);
+  max-height: min(90vh, 40rem);
+  overflow: auto;
+  background: var(--cp-surface-raised);
+  border: 1px solid var(--cp-border);
+  box-shadow: var(--cp-glow-purple);
+  animation: habilidades-modal-in 0.25s ease-out;
+}
+
+.habilidades-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid var(--cp-border);
+}
+
+.habilidades-modal-kicker {
+  margin: 0 0 0.25rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  color: var(--cp-text-dim);
+}
+
+.habilidades-modal-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--cp-purple-soft);
+  text-shadow: var(--cp-glow-purple);
+}
+
+.habilidades-modal-close {
+  border: 1px solid var(--cp-border);
+  background: transparent;
+  color: var(--cp-text-muted);
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.habilidades-modal-close:hover:not(:disabled) {
+  color: var(--cp-text);
+  border-color: var(--cp-purple);
+}
+
+.habilidades-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.habilidades-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  min-width: 0;
+}
+
+.habilidades-field > span,
+.habilidades-toggle legend {
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: var(--cp-text-dim);
+}
+
+.habilidades-field input,
+.habilidades-field select,
+.habilidades-field textarea {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-panel);
+  color: var(--cp-text);
+  font: inherit;
+  letter-spacing: 0.04em;
+  resize: vertical;
+}
+
+.habilidades-field input:focus,
+.habilidades-field select:focus,
+.habilidades-field textarea:focus {
+  outline: none;
+  border-color: var(--cp-purple);
+  box-shadow: 0 0 0 1px var(--cp-purple-dim);
+}
+
+.habilidades-field-row {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr;
+  gap: 0.75rem;
+}
+
+.habilidades-toggle {
+  border: 1px solid var(--cp-border);
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.25rem;
+  background: var(--cp-panel);
+}
+
+.habilidades-toggle legend {
+  padding: 0 0.25rem;
+}
+
+.habilidades-toggle label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--cp-text-muted);
+  cursor: pointer;
+}
+
+.habilidades-toggle input {
+  accent-color: var(--cp-purple);
+}
+
+.habilidades-modal-error {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--cp-magenta);
+}
+
+.habilidades-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  padding-top: 0.25rem;
+}
+
+.habilidades-modal-cancel {
+  padding: 0.7rem 1.1rem;
+  border: 1px solid var(--cp-border);
+  background: transparent;
+  color: var(--cp-text-muted);
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+}
+
+.habilidades-modal-cancel:hover:not(:disabled) {
+  color: var(--cp-text);
+  border-color: var(--cp-text-dim);
+}
+
+.habilidades-modal-cancel:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+@keyframes habilidades-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes habilidades-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 560px) {
+  .habilidades-field-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .habilidades-modal-backdrop,
+  .habilidades-modal {
+    animation: none;
+  }
 }
 
 /* —— Grid —— */
