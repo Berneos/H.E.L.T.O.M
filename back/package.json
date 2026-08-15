@@ -7,11 +7,15 @@
   "type": "commonjs",
   "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/server.js"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "nodemon": "^3.1.14"
+    "mongoose": "^9.9.2",
+    "nodemon": "^3.1.14",
+    "swagger": "^0.7.5",
+    "swagger-ui-express": "^5.0.1"
   }
 }
