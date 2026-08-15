@@ -1,154 +1,84 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { createSkill, deleteSkill, fetchSkills, updateSkill } from '../../api/skills'
+import {
+  buildSkillStats,
+  skillToForm,
+  toSkillPayload,
+} from '../../api/skills.normalize'
 import './Habilidades.css'
 
-const CATEGORIES = [
-  { value: 'OFENSIVO', tone: 'red' },
-  { value: 'COGNITIVO', tone: 'cyan' },
-  { value: 'DEFENSIVO', tone: 'green' },
-  { value: 'SOCIAL', tone: 'purple' },
-]
+const CATEGORIES = ['habilidade', 'experiencia', 'conhecimento', 'social']
+const TONES = ['maroon', 'teal', 'purple', 'green', 'cyan', 'red', 'orange']
 
 const INITIAL_FORM = {
-  title: '',
-  category: 'COGNITIVO',
-  level: 1,
+  nome: '',
+  data: new Date().toISOString().slice(0, 10),
+  nivel: 'intermediario',
+  categoria: 'habilidade',
   active: true,
-  description: '',
-}
-
-const STATS = [
-  {
-    value: '4',
-    label: 'HABILIDADES ATIVAS',
-    hint: 'em execução',
-    tone: 'green',
-  },
-  {
-    value: '6.0',
-    label: 'NÍVEL MÉDIO',
-    hint: 'de 10 máximo',
-    tone: 'purple',
-  },
-  {
-    value: '2',
-    label: 'SLOTS DISPONÍVEIS',
-    hint: 'para novos módulos',
-    tone: 'orange',
-  },
-  {
-    value: '68%',
-    label: 'CARGA COGNITIVA',
-    hint: 'dentro do limite',
-    tone: 'cyan',
-  },
-]
-
-const INITIAL_SKILLS = [
-  {
-    id: 'SKL-01',
-    title: 'ARTES MARCIAIS',
-    category: 'OFENSIVO',
-    active: true,
-    tone: 'red',
-    level: 10,
-    description: 'Canaliza impulsos sinápticos em vetores de ataque. Latência baixa.',
-  },
-  {
-    id: 'SKL-02',
-    title: 'BALLET',
-    category: 'SOCIAL',
-    active: true,
-    tone: 'purple',
-    level: 7,
-    description:
-      'Execução de movimentos graciosos e precisos. Requer coordenação motora fina.',
-  },
-  {
-    id: 'SKL-03',
-    title: 'SUPRESSÃO EMOCIONAL',
-    category: 'DEFENSIVO',
-    active: false,
-    tone: 'green',
-    level: 4,
-    description:
-      'Atenuação voluntária de picos afetivos. Módulo offline — requer recalibração do limiar de empatia.',
-  },
-  {
-    id: 'SKL-04',
-    title: 'ANÁLISE DE PADRÕES',
-    category: 'COGNITIVO',
-    active: true,
-    tone: 'cyan',
-    level: 6,
-    description:
-      'Detecta correlações ocultas em fluxos de dados e comportamento. Precisão cresce com amostras repetidas.',
-  },
-  {
-    id: 'SKL-05',
-    title: 'LINK EMPÁTICO',
-    category: 'SOCIAL',
-    active: false,
-    tone: 'purple',
-    level: 2,
-    description:
-      'Estabelece resonância emocional de curto alcance. Slot inativo — protocolo de consentimento pendente.',
-  },
-  {
-    id: 'SKL-06',
-    title: 'CRIPTOGRAFIA MNÊMICA',
-    category: 'DEFENSIVO',
-    active: true,
-    tone: 'green',
-    level: 8,
-    description:
-      'Blindagem de clusters de memória com chaves neurais rotativas. Protege contra leitura não autorizada.',
-  },
-]
-
-/**
- * Ponto de integração com o backend.
- * Substitua o corpo por POST JSON para o endpoint de cadastro.
- */
-async function createHabilidade(payload) {
-  // TODO: conectar ao backend
-  // const res = await fetch('/api/habilidades', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(payload),
-  // })
-  // if (!res.ok) throw new Error('Falha ao cadastrar habilidade')
-  // return res.json()
-  await new Promise((resolve) => setTimeout(resolve, 500))
-  return { ok: true, ...payload }
-}
-
-function toneForCategory(category) {
-  return CATEGORIES.find((c) => c.value === category)?.tone ?? 'purple'
-}
-
-function nextSkillId(skills) {
-  const next = skills.length + 1
-  return `SKL-${String(next).padStart(2, '0')}`
+  tone: 'purple',
 }
 
 export function Habilidades() {
   const titleId = useId()
   const firstFieldRef = useRef(null)
-  const [skills, setSkills] = useState(INITIAL_SKILLS)
+  const [skills, setSkills] = useState([])
+  const [stats, setStats] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [reloadKey, setReloadKey] = useState(0)
   const [modalOpen, setModalOpen] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [pendingDelete, setPendingDelete] = useState(null)
   const [form, setForm] = useState(INITIAL_FORM)
   const [status, setStatus] = useState({ type: 'idle', message: '' })
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const categoryOptions = Array.from(
+    new Set([...CATEGORIES, form.categoria].filter(Boolean)),
+  )
+  const toneOptions = Array.from(new Set([...TONES, form.tone].filter(Boolean)))
+  const isEditing = Boolean(editingId)
 
   useEffect(() => {
-    if (!modalOpen) return undefined
+    let active = true
+
+    async function load() {
+      setLoading(true)
+      setError(null)
+      try {
+        const payload = await fetchSkills()
+        if (!active) return
+        setSkills(payload.skills)
+        setStats(payload.stats)
+      } catch (err) {
+        if (!active) return
+        setError(err?.message || 'Falha ao carregar habilidades')
+        setSkills([])
+        setStats([])
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+
+    load()
+    return () => {
+      active = false
+    }
+  }, [reloadKey])
+
+  useEffect(() => {
+    if (!modalOpen && !pendingDelete) return undefined
 
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    firstFieldRef.current?.focus()
+    if (modalOpen) firstFieldRef.current?.focus()
 
     function onKeyDown(event) {
-      if (event.key === 'Escape' && !saving) setModalOpen(false)
+      if (event.key !== 'Escape' || saving || deleting) return
+      if (modalOpen) setModalOpen(false)
+      if (pendingDelete) setPendingDelete(null)
     }
 
     window.addEventListener('keydown', onKeyDown)
@@ -156,10 +86,26 @@ export function Habilidades() {
       document.body.style.overflow = previousOverflow
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [modalOpen, saving])
+  }, [modalOpen, pendingDelete, saving, deleting])
 
-  function openModal() {
-    setForm(INITIAL_FORM)
+  function applySkills(next) {
+    setSkills(next)
+    setStats(buildSkillStats(next))
+  }
+
+  function openCreateModal() {
+    setEditingId(null)
+    setForm({
+      ...INITIAL_FORM,
+      data: new Date().toISOString().slice(0, 10),
+    })
+    setStatus({ type: 'idle', message: '' })
+    setModalOpen(true)
+  }
+
+  function openEditModal(skill) {
+    setEditingId(skill.id)
+    setForm(skillToForm(skill))
     setStatus({ type: 'idle', message: '' })
     setModalOpen(true)
   }
@@ -167,6 +113,7 @@ export function Habilidades() {
   function closeModal() {
     if (saving) return
     setModalOpen(false)
+    setEditingId(null)
   }
 
   function updateField(field, value) {
@@ -176,43 +123,89 @@ export function Habilidades() {
   async function handleSubmit(event) {
     event.preventDefault()
 
-    const title = form.title.trim()
-    const description = form.description.trim()
-    if (!title || !description) {
-      setStatus({ type: 'error', message: 'Preencha nome e descrição.' })
+    if (!form.nome.trim() || !form.data) {
+      setStatus({ type: 'error', message: 'Preencha nome e data.' })
       return
-    }
-
-    const payload = {
-      id: nextSkillId(skills),
-      title: title.toUpperCase(),
-      category: form.category,
-      tone: toneForCategory(form.category),
-      level: Number(form.level),
-      active: form.active,
-      description,
     }
 
     setSaving(true)
     setStatus({ type: 'idle', message: '' })
 
     try {
-      const created = await createHabilidade(payload)
-      setSkills((prev) => [...prev, { ...payload, ...created }])
-      setStatus({ type: 'success', message: `Módulo ${payload.title} cadastrado.` })
+      const payload = toSkillPayload(form)
+
+      if (isEditing) {
+        const updated = await updateSkill(editingId, payload)
+        applySkills(skills.map((skill) => (skill.id === editingId ? updated : skill)))
+        setStatus({ type: 'success', message: `Módulo ${updated.title} atualizado.` })
+      } else {
+        const created = await createSkill(payload)
+        applySkills([created, ...skills])
+        setStatus({ type: 'success', message: `Módulo ${created.title} cadastrado.` })
+      }
+
       setModalOpen(false)
-      setForm(INITIAL_FORM)
-    } catch {
-      setStatus({ type: 'error', message: 'Falha ao cadastrar no vault.' })
+      setEditingId(null)
+    } catch (err) {
+      setStatus({
+        type: 'error',
+        message: err?.message || (isEditing ? 'Falha ao atualizar.' : 'Falha ao cadastrar.'),
+      })
     } finally {
       setSaving(false)
     }
   }
 
+  async function confirmDelete() {
+    if (!pendingDelete) return
+    setDeleting(true)
+
+    try {
+      await deleteSkill(pendingDelete.id)
+      applySkills(skills.filter((skill) => skill.id !== pendingDelete.id))
+      setStatus({
+        type: 'success',
+        message: `Módulo ${pendingDelete.title} removido.`,
+      })
+      setPendingDelete(null)
+    } catch (err) {
+      setStatus({
+        type: 'error',
+        message: err?.message || 'Falha ao excluir habilidade.',
+      })
+      setPendingDelete(null)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <main className="habilidades habilidades-state" id="habilidades">
+        <p className="habilidades-state-label">CARREGANDO MÓDULOS…</p>
+      </main>
+    )
+  }
+
+  if (error) {
+    return (
+      <main className="habilidades habilidades-state" id="habilidades">
+        <p className="habilidades-state-label is-error">FALHA NO LINK · {error}</p>
+        <button
+          type="button"
+          className="habilidades-upload-btn"
+          onClick={() => setReloadKey((n) => n + 1)}
+        >
+          TENTAR NOVAMENTE
+        </button>
+      </main>
+    )
+  }
+
   return (
     <main className="habilidades" id="habilidades">
       <section className="habilidades-stats" aria-label="Métricas de habilidades">
-        {STATS.map((stat) => (
+        {stats.map((stat) => (
           <article key={stat.label} className={`habilidades-stat tone-${stat.tone}`}>
             <p className="habilidades-stat-value">{stat.value}</p>
             <p className="habilidades-stat-label">{stat.label}</p>
@@ -226,24 +219,29 @@ export function Habilidades() {
           <p className="habilidades-toolbar-label">MÓDULOS</p>
           <p className="habilidades-toolbar-hint">
             {status.type === 'success' && status.message}
-            {status.type === 'error' && !modalOpen && status.message}
-            {status.type === 'idle' && '2 slots livres para novos módulos'}
+            {status.type === 'error' && !modalOpen && !pendingDelete && status.message}
+            {status.type === 'idle' &&
+              `${Math.max(0, 8 - skills.length)} slots livres para novos módulos`}
           </p>
         </div>
 
-        <button type="button" className="habilidades-upload-btn" onClick={openModal}>
+        <button type="button" className="habilidades-upload-btn" onClick={openCreateModal}>
           + NOVA HABILIDADE
         </button>
       </div>
 
       <section className="habilidades-grid" aria-label="Módulos de habilidade">
+        {skills.length === 0 && (
+          <p className="habilidades-empty">Nenhum módulo cadastrado no vault.</p>
+        )}
         {skills.map((skill) => (
           <article
             key={skill.id}
-            className={`habilidades-card tone-${skill.tone}${skill.active ? ' is-active' : ''}`}
+            className={`habilidades-card${skill.active ? ' is-active' : ''}`}
+            style={{ '--skill-accent': skill.toneColor }}
           >
             <header className="habilidades-card-top">
-              <span className="habilidades-card-id">{skill.id}</span>
+              <span className="habilidades-card-id">{skill.date}</span>
               <div className="habilidades-card-flags">
                 <span className="habilidades-card-cat">{skill.category}</span>
                 <span className={`habilidades-card-status${skill.active ? ' is-on' : ''}`}>
@@ -257,11 +255,8 @@ export function Habilidades() {
 
             <div className="habilidades-nvl">
               <div className="habilidades-nvl-label">
-                <span>NVL</span>
-                <span>
-                  {skill.level}
-                  <em>/10</em>
-                </span>
+                <span>NÍVEL</span>
+                <span>{skill.levelLabel}</span>
               </div>
               <div className="habilidades-nvl-bars" aria-hidden="true">
                 {Array.from({ length: 10 }, (_, i) => (
@@ -273,13 +268,36 @@ export function Habilidades() {
               </div>
             </div>
 
-            <p className="habilidades-card-desc">{skill.description}</p>
+            {skill.description ? (
+              <p className="habilidades-card-desc">{skill.description}</p>
+            ) : (
+              <p className="habilidades-card-desc">
+                Categoria {skill.category.toLowerCase()} · tom {skill.tone}
+              </p>
+            )}
+
+            <div className="habilidades-card-actions">
+              <button
+                type="button"
+                className="habilidades-card-btn"
+                onClick={() => openEditModal(skill)}
+              >
+                EDITAR
+              </button>
+              <button
+                type="button"
+                className="habilidades-card-btn is-danger"
+                onClick={() => setPendingDelete(skill)}
+              >
+                DELETAR
+              </button>
+            </div>
           </article>
         ))}
       </section>
 
       <footer className="habilidades-footer">
-        <span>MNEMO // VAULT — NEURAL MEMORY MANAGEMENT SYSTEM v4.7.2</span>
+        <span>HELTOM // VAULT — Human Experience, Learning & Temporal Organization Memory v4.7.2</span>
         <span>
           TAG#: #600788 · ENCRIPTAÇÃO: AES-512{' '}
           <span className="habilidades-secure">
@@ -304,8 +322,12 @@ export function Habilidades() {
           >
             <header className="habilidades-modal-head">
               <div>
-                <p className="habilidades-modal-kicker">PROTOCOLO DE INSERÇÃO</p>
-                <h2 id={titleId}>CADASTRAR HABILIDADE</h2>
+                <p className="habilidades-modal-kicker">
+                  {isEditing ? 'PATCH /skill/' : 'POST /skill/'}
+                </p>
+                <h2 id={titleId}>
+                  {isEditing ? 'EDITAR HABILIDADE' : 'CADASTRAR HABILIDADE'}
+                </h2>
               </div>
               <button
                 type="button"
@@ -324,43 +346,69 @@ export function Habilidades() {
                 <input
                   ref={firstFieldRef}
                   type="text"
-                  name="title"
-                  maxLength={48}
-                  placeholder="Ex: VISÃO TÁTICA"
-                  value={form.title}
-                  onChange={(e) => updateField('title', e.target.value)}
+                  name="nome"
+                  maxLength={80}
+                  placeholder="Ex: Paixão por artes marciais"
+                  value={form.nome}
+                  onChange={(e) => updateField('nome', e.target.value)}
                   required
                 />
               </label>
 
               <div className="habilidades-field-row">
                 <label className="habilidades-field">
+                  <span>DATA</span>
+                  <input
+                    type="date"
+                    name="data"
+                    value={form.data}
+                    onChange={(e) => updateField('data', e.target.value)}
+                    required
+                  />
+                </label>
+
+                <label className="habilidades-field">
+                  <span>NÍVEL</span>
+                  <input
+                    type="text"
+                    name="nivel"
+                    placeholder="avancado, experiencia…"
+                    value={form.nivel}
+                    onChange={(e) => updateField('nivel', e.target.value)}
+                    required
+                  />
+                </label>
+              </div>
+
+              <div className="habilidades-field-row">
+                <label className="habilidades-field">
                   <span>CATEGORIA</span>
                   <select
-                    name="category"
-                    value={form.category}
-                    onChange={(e) => updateField('category', e.target.value)}
+                    name="categoria"
+                    value={form.categoria}
+                    onChange={(e) => updateField('categoria', e.target.value)}
                   >
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat.value} value={cat.value}>
-                        {cat.value}
+                    {categoryOptions.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
                       </option>
                     ))}
                   </select>
                 </label>
 
                 <label className="habilidades-field">
-                  <span>NÍVEL (1–10)</span>
-                  <input
-                    type="number"
-                    name="level"
-                    min={1}
-                    max={10}
-                    value={form.level}
-                    onChange={(e) =>
-                      updateField('level', Math.min(10, Math.max(1, Number(e.target.value) || 1)))
-                    }
-                  />
+                  <span>TOM</span>
+                  <select
+                    name="tone"
+                    value={form.tone}
+                    onChange={(e) => updateField('tone', e.target.value)}
+                  >
+                    {toneOptions.map((tone) => (
+                      <option key={tone} value={tone}>
+                        {tone}
+                      </option>
+                    ))}
+                  </select>
                 </label>
               </div>
 
@@ -386,19 +434,6 @@ export function Habilidades() {
                 </label>
               </fieldset>
 
-              <label className="habilidades-field">
-                <span>DESCRIÇÃO</span>
-                <textarea
-                  name="description"
-                  rows={4}
-                  maxLength={280}
-                  placeholder="Descreva o módulo neural…"
-                  value={form.description}
-                  onChange={(e) => updateField('description', e.target.value)}
-                  required
-                />
-              </label>
-
               {status.type === 'error' && modalOpen && (
                 <p className="habilidades-modal-error" role="alert">
                   {status.message}
@@ -415,10 +450,57 @@ export function Habilidades() {
                   CANCELAR
                 </button>
                 <button type="submit" className="habilidades-upload-btn" disabled={saving}>
-                  {saving ? 'GRAVANDO…' : 'CADASTRAR'}
+                  {saving ? 'GRAVANDO…' : isEditing ? 'SALVAR' : 'CADASTRAR'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {pendingDelete && (
+        <div
+          className="habilidades-modal-backdrop"
+          role="presentation"
+          onClick={() => !deleting && setPendingDelete(null)}
+        >
+          <div
+            className="habilidades-modal habilidades-modal-confirm"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="habilidades-delete-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="habilidades-modal-head">
+              <div>
+                <p className="habilidades-modal-kicker">DELETE /skill/</p>
+                <h2 id="habilidades-delete-title">EXCLUIR MÓDULO</h2>
+              </div>
+            </header>
+            <div className="habilidades-modal-form">
+              <p className="habilidades-confirm-text">
+                Remover <strong>{pendingDelete.title}</strong> do vault? Esta ação não pode
+                ser desfeita.
+              </p>
+              <div className="habilidades-modal-actions">
+                <button
+                  type="button"
+                  className="habilidades-modal-cancel"
+                  onClick={() => setPendingDelete(null)}
+                  disabled={deleting}
+                >
+                  CANCELAR
+                </button>
+                <button
+                  type="button"
+                  className="habilidades-upload-btn is-danger"
+                  onClick={confirmDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? 'EXCLUINDO…' : 'CONFIRMAR'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

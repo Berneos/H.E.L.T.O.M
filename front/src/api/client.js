@@ -13,6 +13,7 @@ export async function apiRequest(path, options = {}) {
   const url = `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`
 
   const response = await fetch(url, {
+    ...options,
     headers: {
       Accept: 'application/json',
       ...(options.body && !(options.body instanceof FormData)
@@ -20,7 +21,6 @@ export async function apiRequest(path, options = {}) {
         : {}),
       ...options.headers,
     },
-    ...options,
   })
 
   const contentType = response.headers.get('content-type') ?? ''
@@ -29,9 +29,9 @@ export async function apiRequest(path, options = {}) {
 
   if (!response.ok) {
     const message =
-      (body && typeof body === 'object' && (body.message || body.error)) ||
+      (body && typeof body === 'object' && (body.error || body.message)) ||
       `Erro HTTP ${response.status}`
-    throw new ApiError(message, { status: response.status, body })
+    throw new ApiError(String(message), { status: response.status, body })
   }
 
   return body

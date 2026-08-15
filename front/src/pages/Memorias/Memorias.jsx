@@ -10,7 +10,6 @@ export function Memorias() {
   const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
-    const controller = new AbortController()
     let active = true
 
     async function load() {
@@ -19,7 +18,7 @@ export function Memorias() {
 
       try {
         const payload = await fetchMemorias()
-        if (!active || controller.signal.aborted) return
+        if (!active) return
 
         setData(payload)
         setSelectedId((current) => {
@@ -27,7 +26,7 @@ export function Memorias() {
           return payload.memories[0]?.id ?? null
         })
       } catch (err) {
-        if (!active || controller.signal.aborted) return
+        if (!active) return
         setError(err?.message || 'Falha ao carregar memórias')
         setData(null)
       } finally {
@@ -38,7 +37,6 @@ export function Memorias() {
     load()
     return () => {
       active = false
-      controller.abort()
     }
   }, [reloadKey])
 
@@ -100,7 +98,15 @@ export function Memorias() {
               className={`memorias-float-card align-${floatAlign(selected.year, range)}`}
               style={{ '--node-pos': yearToPercent(selected.year, range) }}
             >
-              <div className="memorias-float-thumb" aria-hidden="true" />
+              {selected.imageSrc ? (
+                <img
+                  className="memorias-float-thumb"
+                  src={selected.imageSrc}
+                  alt=""
+                />
+              ) : (
+                <div className="memorias-float-thumb" aria-hidden="true" />
+              )}
               <div className="memorias-float-body">
                 <span className={`memorias-badge status-${selected.status}`}>
                   {selected.statusLabel}
@@ -153,7 +159,7 @@ export function Memorias() {
                     <div className="memorias-index-main">
                       <span className="memorias-index-title">{memory.title}</span>
                       <span className="memorias-index-meta">
-                        {memory.date} · {memory.id}
+                        {memory.date} · {memory.keyword || memory.id}
                       </span>
                     </div>
                     <div className="memorias-index-bar-wrap">
@@ -176,19 +182,13 @@ export function Memorias() {
           <article className="memorias-panel memorias-detail">
             <header className="memorias-panel-head">
               <h2>REGISTRO</h2>
-              <span>{selected.id}</span>
+              <span>{selected.keyword || selected.id}</span>
             </header>
 
             <div className="memorias-detail-grid">
               <div className="memorias-detail-meta">
                 <h3>{selected.title}</h3>
                 <dl>
-                  {selected.type && (
-                    <div>
-                      <dt>TIPO</dt>
-                      <dd>{selected.type}</dd>
-                    </div>
-                  )}
                   <div>
                     <dt>DATA</dt>
                     <dd>{selected.date}</dd>
@@ -197,10 +197,10 @@ export function Memorias() {
                     <dt>ANO</dt>
                     <dd>{selected.year}</dd>
                   </div>
-                  {selected.size && (
+                  {selected.keyword && (
                     <div>
-                      <dt>TAMANHO</dt>
-                      <dd>{selected.size}</dd>
+                      <dt>CHAVE</dt>
+                      <dd>{selected.keyword}</dd>
                     </div>
                   )}
                 </dl>
@@ -233,10 +233,16 @@ export function Memorias() {
               </div>
             </div>
 
+            {selected.imageSrc && (
+              <div className="memorias-detail-image">
+                <img src={selected.imageSrc} alt={selected.title} />
+              </div>
+            )}
+
             {selected.fragment && (
               <div className="memorias-fragment">
-                <h4>FRAGMENTO DE MEMÓRIA</h4>
-                <p>“{selected.fragment}”</p>
+                <h4>DESCRIÇÃO</h4>
+                <p>{selected.fragment}</p>
               </div>
             )}
           </article>
@@ -248,12 +254,6 @@ export function Memorias() {
             <span>AO VIVO</span>
           </header>
           <ul className="memorias-log-list">
-            {logs.length === 0 && (
-              <li className="level-info">
-                <span className="memorias-log-time">[--:--:--]</span>
-                <span className="memorias-log-msg">Aguardando eventos do vault…</span>
-              </li>
-            )}
             {logs.map((entry) => (
               <li key={entry.id} className={`level-${entry.level}`}>
                 <span className="memorias-log-time">[{entry.t}]</span>

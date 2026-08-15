@@ -7,6 +7,36 @@
   min-height: 0;
 }
 
+.habilidades-state {
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.habilidades-state-label {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.16em;
+  color: var(--cp-purple-soft);
+  text-shadow: var(--cp-glow-purple);
+}
+
+.habilidades-state-label.is-error {
+  color: var(--cp-magenta);
+  text-shadow: var(--cp-glow-magenta);
+}
+
+.habilidades-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 2rem;
+  text-align: center;
+  letter-spacing: 0.08em;
+  color: var(--cp-text-dim);
+}
+
 /* —— Stats —— */
 .habilidades-stats {
   display: grid;
@@ -399,22 +429,6 @@
   opacity: 0.55;
 }
 
-.habilidades-card.tone-red {
-  --skill-accent: var(--cp-red);
-}
-
-.habilidades-card.tone-cyan {
-  --skill-accent: var(--cp-blue);
-}
-
-.habilidades-card.tone-green {
-  --skill-accent: var(--cp-green);
-}
-
-.habilidades-card.tone-purple {
-  --skill-accent: var(--cp-purple-soft);
-}
-
 .habilidades-card.is-active {
   box-shadow: 0 0 20px color-mix(in srgb, var(--skill-accent) 18%, transparent);
 }
@@ -558,6 +572,71 @@
   line-height: 1.5;
   color: var(--cp-text-muted);
   border-top: 1px solid var(--cp-border-soft);
+}
+
+.habilidades-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+}
+
+.habilidades-card-btn {
+  flex: 1 1 auto;
+  min-width: 5.5rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-panel);
+  color: var(--cp-text-muted);
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.habilidades-card-btn:hover {
+  color: var(--cp-text);
+  border-color: var(--skill-accent);
+  background: color-mix(in srgb, var(--skill-accent) 12%, transparent);
+}
+
+.habilidades-card-btn.is-danger:hover {
+  color: var(--cp-magenta);
+  border-color: var(--cp-magenta);
+  background: var(--cp-magenta-dim);
+}
+
+.habilidades-card-btn:focus-visible {
+  outline: 2px solid var(--cp-green);
+  outline-offset: 2px;
+}
+
+.habilidades-upload-btn.is-danger {
+  border-color: var(--cp-magenta);
+  background: var(--cp-magenta-dim);
+  box-shadow: var(--cp-glow-magenta);
+}
+
+.habilidades-upload-btn.is-danger:hover:not(:disabled) {
+  background: var(--cp-magenta);
+  color: var(--cp-void);
+}
+
+.habilidades-confirm-text {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--cp-text-muted);
+}
+
+.habilidades-confirm-text strong {
+  color: var(--cp-text);
+  font-weight: 600;
+}
+
+.habilidades-modal-confirm {
+  width: min(100%, 26rem);
 }
 
 /* —— Footer —— */

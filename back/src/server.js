@@ -1,13 +1,12 @@
-
-
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const { connectDB } = require('./config/database');
 
 const app = express();
 
-// Parse JSON bodies
-app.use(express.json());
+app.use(cors({ origin: true }));
+app.use(express.json({ limit: '15mb' }));
 
 // Swagger UI
 try {
@@ -19,7 +18,6 @@ try {
 	console.warn('swagger-ui-express not available:', err.message);
 }
 
-// Register routes
 const routes = require('./routes');
 app.use('/', routes);
 
@@ -32,10 +30,8 @@ const PORT = process.env.PORT || 3000;
 if (require.main === module) {
 	(async () => {
 		try {
-			// Connect to MongoDB (uses provided hackathon URI if none specified in env)
 			await connectDB(process.env.DATABASE_URL);
 
-			// Run seeder to create or recreate the single Pessoa
 			const { seedRafael } = require('./config/seeder');
 			await seedRafael();
 

@@ -1,3 +1,8 @@
+/**
+ * Normaliza payloads do backend GET /memory/
+ * Campos: _id, titulo, data, descricao, palavraChave, imagem, imagemMimeType, integrity, nodeColor
+ */
+
 const STATUS_LABEL = {
   estavel: 'ESTÁVEL',
   aviso: 'AVISO',
@@ -21,47 +26,56 @@ function deriveNodeColor(integrity, status) {
   return 'green'
 }
 
-function yearFromDate(date, year) {
-  if (Number.isFinite(Number(year))) return Number(year)
-  if (typeof date === 'string' && date.length >= 4) {
-    const parsed = Number(date.slice(0, 4))
-    if (Number.isFinite(parsed)) return parsed
-  }
-  return new Date().getFullYear()
+function formatDate(value) {
+  if (!value) return '—'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return String(value)
+  return date.toLocaleDateString('pt-BR')
+}
+
+function yearFromDate(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return new Date().getFullYear()
+  return date.getFullYear()
+}
+
+export function buildImageSrc(imagem, mimeType) {
+  if (!imagem) return null
+  if (String(imagem).startsWith('data:')) return imagem
+  const mime =
+    mimeType && String(mimeType).includes('/') ? mimeType : 'image/jpeg'
+  return `data:${mime};base64,${imagem}`
 }
 
 export function normalizeMemory(raw, index = 0) {
-  const integrity = Math.min(100, Math.max(0, toNumber(raw?.integrity, 0)))
-  const status = raw?.status || deriveStatus(integrity)
-  const date = raw?.date ?? raw?.registro ?? '—'
-  const year = yearFromDate(date, raw?.year)
-  const tags = Array.isArray(raw?.tags) ? raw.tags : []
+  const integrity = Math.min(100, Math.max(0, toNumber(raw?.integrity, 100)))
+  const status = deriveStatus(integrity)
+  const data = raw?.data ?? raw?.date
+  const palavraChave = raw?.palavraChave ?? raw?.keyword ?? ''
+  const tags = palavraChave
+    ? [`#${String(palavraChave).replace(/^#/, '')}`]
+    : Array.isArray(raw?.tags)
+      ? raw.tags
+      : []
 
   return {
-    id: String(raw?.id ?? `MEM-${String(index + 1).padStart(2, '0')}`),
-    title: String(raw?.title ?? raw?.nome ?? 'SEM TÍTULO').toUpperCase(),
-    year,
-    date,
+    id: String(raw?._id ?? raw?.id ?? `MEM-${index + 1}`),
+    title: String(raw?.titulo ?? raw?.title ?? 'SEM TÍTULO'),
+    year: yearFromDate(data),
+    date: formatDate(data),
+    rawDate: data ?? null,
     integrity,
     tags,
-    fragment: String(raw?.fragment ?? raw?.relato ?? ''),
+    fragment: String(raw?.descricao ?? raw?.fragment ?? ''),
+    keyword: palavraChave ? String(palavraChave) : '',
     status,
-    statusLabel: raw?.statusLabel ?? STATUS_LABEL[status] ?? status.toUpperCase(),
-    nodeColor: raw?.nodeColor ?? deriveNodeColor(integrity, status),
-    type: raw?.type ?? raw?.tipo ?? null,
-    size: raw?.size ?? raw?.tamanho ?? null,
+    statusLabel: STATUS_LABEL[status],
+    nodeColor: raw?.nodeColor || deriveNodeColor(integrity, status),
+    imageSrc: buildImageSrc(raw?.imagem, raw?.imagemMimeType),
   }
 }
 
-function buildStats(memories, statsFromApi) {
-  if (Array.isArray(statsFromApi) && statsFromApi.length > 0) {
-    return statsFromApi.map((stat) => ({
-      label: String(stat.label ?? ''),
-      value: String(stat.value ?? '—'),
-      tone: stat.tone ?? 'purple',
-    }))
-  }
-
+function buildStats(memories) {
   const count = memories.length
   const avg =
     count === 0
@@ -73,18 +87,15 @@ function buildStats(memories, statsFromApi) {
     { label: 'INTEGRIDADE MÉDIA', value: `${avg}%`, tone: 'green' },
     { label: 'MEMÓRIAS INDEXADAS', value: String(count), tone: 'purple' },
     { label: 'ARQUIVOS CRÍTICOS', value: String(critical), tone: 'yellow' },
-    { label: 'CAPACIDADE USADA', value: '—', tone: 'blue' },
+    {
+      label: 'INTERVALO',
+      value:
+        count === 0
+          ? '—'
+          : `${Math.min(...memories.map((m) => m.year))}–${Math.max(...memories.map((m) => m.year))}`,
+      tone: 'blue',
+    },
   ]
-}
-
-function normalizeLogs(logs) {
-  if (!Array.isArray(logs)) return []
-  return logs.map((entry, index) => ({
-    id: entry.id ?? `${entry.t ?? index}-${entry.msg ?? index}`,
-    t: String(entry.t ?? entry.time ?? '--:--:--'),
-    level: String(entry.level ?? 'info').toLowerCase(),
-    msg: String(entry.msg ?? entry.message ?? ''),
-  }))
 }
 
 export function getYearRange(memories) {
@@ -103,18 +114,47 @@ export function normalizeMemoriasPayload(payload) {
       ? payload.memories
       : Array.isArray(payload?.memorias)
         ? payload.memorias
-        : Array.isArray(payload?.data)
-          ? payload.data
-          : []
+        : []
 
   const memories = list
     .map((item, index) => normalizeMemory(item, index))
-    .sort((a, b) => a.year - b.year || String(a.date).localeCompare(String(b.date)))
+    .sort((a, b) => a.year - b.year || String(a.rawDate).localeCompare(String(b.rawDate)))
 
   return {
     memories,
-    stats: buildStats(memories, payload?.stats),
-    logs: normalizeLogs(payload?.logs ?? payload?.log),
+    stats: buildStats(memories),
+    logs: buildLogs(memories),
     range: getYearRange(memories),
   }
+}
+
+function buildLogs(memories) {
+  const now = new Date()
+  const stamp = now.toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+
+  const critical = memories.filter((m) => m.status === 'critico')
+  const logs = [
+    {
+      id: 'sync',
+      t: stamp,
+      level: 'ok',
+      msg: `VAULT: ${memories.length} memórias sincronizadas do backend`,
+    },
+  ]
+
+  critical.slice(0, 3).forEach((m) => {
+    logs.push({
+      id: `crit-${m.id}`,
+      t: stamp,
+      level: 'warn',
+      msg: `AVISO: ${m.title} abaixo do limiar (${m.integrity}%)`,
+    })
+  })
+
+  return logs
 }
