@@ -1,0 +1,357 @@
+.traumas {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem var(--page-pad) 1.25rem;
+  min-height: 0;
+}
+
+/* —— Stats —— */
+.traumas-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.traumas-stat {
+  padding: 0.85rem 1rem;
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  box-shadow: 0 0 18px #ff005512;
+}
+
+.traumas-stat-label {
+  margin: 0 0 0.4rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: var(--cp-text-dim);
+}
+
+.traumas-stat-value {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  letter-spacing: 0.06em;
+  line-height: 1.15;
+  color: var(--cp-text);
+}
+
+.tone-magenta .traumas-stat-value {
+  color: var(--cp-magenta);
+  text-shadow: var(--cp-glow-magenta);
+}
+
+.tone-amber .traumas-stat-value {
+  color: var(--cp-amber);
+  text-shadow: 0 0 12px #ffb80055;
+}
+
+/* —— Layout —— */
+.traumas-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(16rem, 0.85fr);
+  gap: 0.75rem;
+  flex: 1;
+  min-height: 0;
+  align-items: start;
+}
+
+.traumas-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.85rem;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--cp-text);
+}
+
+.traumas-section-title span {
+  color: var(--cp-magenta);
+  text-shadow: var(--cp-glow-magenta);
+}
+
+.traumas-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* —— Trauma cards —— */
+.traumas-card {
+  padding: 1rem 1.1rem;
+  background: var(--cp-surface);
+  border: 1px solid color-mix(in srgb, var(--cp-magenta) 55%, var(--cp-border));
+  box-shadow: var(--cp-glow-magenta);
+}
+
+.traumas-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.traumas-card-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem 0.75rem;
+  min-width: 0;
+}
+
+.traumas-card-id {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--cp-magenta);
+  text-shadow: var(--cp-glow-magenta);
+}
+
+.traumas-card-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--cp-text);
+}
+
+.traumas-card-level {
+  flex-shrink: 0;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  color: var(--cp-magenta);
+  border: 1px solid var(--cp-magenta);
+  background: var(--cp-magenta-dim);
+}
+
+.traumas-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.75rem;
+  margin: 0 0 0.85rem;
+}
+
+.traumas-card-meta div {
+  display: flex;
+  gap: 0.45rem;
+  align-items: baseline;
+}
+
+.traumas-card-meta dt {
+  margin: 0;
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  color: var(--cp-text-dim);
+}
+
+.traumas-card-meta dd {
+  margin: 0;
+  font-size: 0.68rem;
+  color: var(--cp-text-muted);
+}
+
+.traumas-integrity {
+  margin-bottom: 0.85rem;
+}
+
+.traumas-integrity-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: var(--cp-text-muted);
+}
+
+.traumas-integrity-track {
+  height: 4px;
+  background: var(--cp-border);
+  overflow: hidden;
+}
+
+.traumas-integrity-track > span {
+  display: block;
+  height: 100%;
+  background: var(--cp-magenta);
+  box-shadow: 0 0 10px var(--cp-magenta);
+}
+
+.traumas-fragment {
+  padding: 0.75rem 0.85rem;
+  margin-bottom: 0.75rem;
+  background: var(--cp-panel);
+  border: 1px solid var(--cp-border);
+}
+
+.traumas-fragment p {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.55;
+  color: var(--cp-text-muted);
+}
+
+.traumas-prompt {
+  color: var(--cp-magenta);
+  letter-spacing: 0.04em;
+}
+
+.traumas-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.traumas-tags span {
+  padding: 0.15rem 0.4rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  color: var(--cp-text-dim);
+  border: 1px solid var(--cp-border);
+}
+
+/* —— Log sidebar —— */
+.traumas-log {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  box-shadow: 0 0 18px #ff005512;
+}
+
+.traumas-log-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--cp-border);
+}
+
+.traumas-log-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: var(--cp-magenta);
+}
+
+.traumas-log-live {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--cp-magenta);
+  box-shadow: var(--cp-glow-magenta);
+  animation: traumas-pulse 1.8s ease-in-out infinite;
+}
+
+.traumas-log-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  overflow: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.traumas-log-meta {
+  margin: 0 0 0.2rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  color: var(--cp-text-dim);
+}
+
+.traumas-log-meta span {
+  letter-spacing: 0.08em;
+}
+
+.level-critical .traumas-log-meta span,
+.level-critical .traumas-log-msg {
+  color: var(--cp-magenta);
+}
+
+.level-warning .traumas-log-meta span,
+.level-warning .traumas-log-msg {
+  color: var(--cp-amber);
+}
+
+.level-normal .traumas-log-meta span,
+.level-normal .traumas-log-msg {
+  color: var(--cp-cyan);
+}
+
+.traumas-log-msg {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.traumas-log-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.85rem;
+  border-top: 1px solid var(--cp-border);
+  background: var(--cp-panel);
+}
+
+.traumas-log-foot span {
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  color: var(--cp-text-dim);
+}
+
+.traumas-log-foot strong {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--cp-amber);
+  text-shadow: 0 0 14px #ffb80055;
+}
+
+@keyframes traumas-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (max-width: 1000px) {
+  .traumas-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .traumas-log {
+    max-height: 18rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .traumas-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .traumas-log-live {
+    animation: none;
+  }
+}
