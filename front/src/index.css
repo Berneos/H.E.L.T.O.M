@@ -1,111 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Surfaces — MNEMO//VAULT */
+  --cp-void: #05050a;
+  --cp-bg: #0b0014;
+  --cp-surface: #160c2c;
+  --cp-surface-raised: #1c1238;
+  --cp-panel: #120820;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Neon accents */
+  --cp-purple: #b026ff;
+  --cp-purple-soft: #b580ff;
+  --cp-purple-dim: #b026ff33;
+  --cp-green: #00ff9c;
+  --cp-green-dim: #00ff9c33;
+  --cp-yellow: #ffd700;
+  --cp-yellow-dim: #ffd70033;
+  --cp-red: #ff4d4d;
+  --cp-red-dim: #ff4d4d33;
+  --cp-magenta: #ff0055;
+  --cp-magenta-dim: #ff005533;
+  --cp-orange: #ff8c3a;
+  --cp-amber: #ffb800;
+  --cp-blue: #42c7ff;
+  --cp-blue-dim: #42c7ff33;
+  --cp-cyan: #00d4ff;
+  --cp-glow-magenta: 0 0 16px #ff005566, 0 0 32px #ff005533;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Text */
+  --cp-text: #f2f0f7;
+  --cp-text-muted: #8b8b9e;
+  --cp-text-dim: #5c5c8a;
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  /* Lines & glow */
+  --cp-border: #2d1a4d;
+  --cp-border-soft: #2d1a4d88;
+  --cp-glow-purple: 0 0 16px #b026ff66, 0 0 32px #b026ff33;
+  --cp-glow-green: 0 0 12px #00ff9c66, 0 0 24px #00ff9c33;
+
+  /* Typography */
+  --font-display: 'Share Tech Mono', monospace;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-body: 'JetBrains Mono', monospace;
+
+  /* Spacing */
+  --page-pad: clamp(0.75rem, 2.5vw, 1.5rem);
+  --panel-radius: 2px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--cp-text);
+  background: var(--cp-bg);
+  -webkit-font-smoothing: antialiased;
 }
 
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
+  background:
+    radial-gradient(ellipse 70% 40% at 50% -10%, #2a1050 0%, transparent 55%),
+    var(--cp-bg);
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+a {
+  color: var(--cp-purple-soft);
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
+img {
+  max-width: 100%;
+  display: block;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+button,
+input,
+textarea {
+  font: inherit;
 }
